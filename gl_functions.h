@@ -1,0 +1,70 @@
+#pragma once
+
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+void (* glAttachShader)(uint32_t, uint32_t);
+void (* glBeginTransformFeedback)(uint32_t);
+void (* glBindFramebuffer)(uint32_t, uint32_t);
+void (* glBindProgramPipeline)(uint32_t);
+void (* glBindSamplers)(int, int, const uint32_t *);
+void (* glBindTextures)(int, int, const uint32_t *);
+void (* glBindTransformFeedback)(uint32_t, uint32_t);
+void (* glBlitNamedFramebuffer)(uint32_t, uint32_t, int, int, int, int, int, int, int, int, uint32_t, uint32_t);
+void (* glClear)(uint32_t);
+void (* glClearColor)(float, float, float, float);
+void (* glCompileShader)(uint32_t);
+void (* glCreateBuffers)(int, uint32_t *);
+void (* glCreateFramebuffers)(int, uint32_t *);
+uint32_t (* glCreateProgram)();
+void (* glCreateProgramPipelines)(int, uint32_t *);
+void (* glCreateSamplers)(int, uint32_t *);
+uint32_t (* glCreateShader)(uint32_t);
+void (* glCreateTextures)(uint32_t, int, uint32_t *);
+void (* glCreateTransformFeedbacks)(int, uint32_t *);
+void (* glDebugMessageCallback)(void *, void *);
+void (* glDeleteBuffers)(int, const uint32_t *);
+void (* glDeleteFramebuffers)(int, const uint32_t *);
+void (* glDeleteProgram)(uint32_t);
+void (* glDeleteProgramPipelines)(int, const uint32_t *);
+void (* glDeleteSamplers)(int, const uint32_t *);
+void (* glDeleteShader)(uint32_t);
+void (* glDeleteTextures)(int, const uint32_t *);
+void (* glDeleteTransformFeedbacks)(int, const uint32_t *);
+void (* glDetachShader)(uint32_t, uint32_t);
+void (* glDisable)(uint32_t);
+void (* glDrawArraysInstancedBaseInstance)(uint32_t, int, int, int, int);
+void (* glEnable)(uint32_t);
+void (* glEndTransformFeedback)();
+void (* glFinish)();
+void (* glGenerateTextureMipmap)(uint32_t);
+void (* glGenTextures)(int, uint32_t *);
+void (* glGetTextureSubImage)(uint32_t, int, int, int, int, int, int, int, uint32_t, uint32_t, int, void *);
+void (* glLinkProgram)(uint32_t);
+void * (* glMapNamedBufferRange)(uint32_t, ptrdiff_t, ptrdiff_t, uint32_t);
+void (* glNamedBufferStorage)(uint32_t, ptrdiff_t, const void *, uint32_t);
+void (* glNamedFramebufferDrawBuffer)(uint32_t, int);
+void (* glNamedFramebufferDrawBuffers)(uint32_t, int, const int *);
+void (* glNamedFramebufferReadBuffer)(uint32_t, int);
+void (* glNamedFramebufferTextureLayer)(uint32_t, int, uint32_t, int, int);
+void (* glProgramParameteri)(uint32_t, uint32_t, int);
+void (* glProgramUniform1dv)(uint32_t, int, int, const double *);
+void (* glProgramUniform1fv)(uint32_t, int, int, const float *);
+void (* glProgramUniform1iv)(uint32_t, int, int, const int *);
+void (* glProgramUniform1uiv)(uint32_t, int, int, const uint32_t *);
+void (* glProgramUniform2fv)(uint32_t, int, int, const float *);
+void (* glProgramUniform3fv)(uint32_t, int, int, const float *);
+void (* glProgramUniform4fv)(uint32_t, int, int, const float *);
+void (* glSamplerParameteri)(uint32_t, uint32_t, int);
+void (* glScissor)(int, int, int, int);
+void (* glShaderSource)(uint32_t, int, const char **, const int *);
+void (* glTextureBufferRange)(uint32_t, uint32_t, uint32_t, ptrdiff_t, ptrdiff_t);
+void (* glTextureStorage3D)(uint32_t, int, uint32_t, int, int, int);
+void (* glTextureStorage3DMultisample)(uint32_t, int, uint32_t, int, int, int, int);
+void (* glTextureSubImage3D)(uint32_t, int, int, int, int, int, int, int, uint32_t, uint32_t, const void *);
+void (* glTextureView)(uint32_t, uint32_t, uint32_t, uint32_t, int, int, int, int);
+void (* glTransformFeedbackBufferRange)(uint32_t, int, uint32_t, ptrdiff_t, ptrdiff_t);
+void (* glTransformFeedbackVaryings)(uint32_t, int, const char **, uint32_t);
+void (* glUseProgramStages)(uint32_t, uint32_t, uint32_t);
+void (* glViewport)(int, int, int, int);

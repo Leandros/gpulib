@@ -1,0 +1,6 @@
+bob
+app
+*.obj
+*.exe
+*.dll
+*.out

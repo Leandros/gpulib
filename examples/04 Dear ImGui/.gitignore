@@ -1,0 +1,6 @@
+app
+*.obj
+*.exe
+*.dll
+*.out
+imgui.ini
