@@ -1,19 +1,21 @@
+#pragma once
+
 #ifdef USE_TINYPROFILER
 
 struct {
   int i;
-  long int sample_count;
+  size_t sample_count;
   struct {
     char ph;
     int pid;
     int tid;
-    unsigned long ts;
+    long int ts;
     char name[100];
   } * s;
 } _prof_data[/*PROF_MAX_NUM_OF_THREADS*/4] = {};
 
 #include <stdlib.h>
-static inline void profAlloc(long int sample_count_per_thread)
+static inline void profAlloc(size_t sample_count_per_thread)
 {
   for (int t = 0; t < /*PROF_MAX_NUM_OF_THREADS*/4; t++)
   {
@@ -22,7 +24,7 @@ static inline void profAlloc(long int sample_count_per_thread)
       char ph;
       int pid;
       int tid;
-      unsigned long ts;
+      long int ts;
       char name[100];
     });
     _prof_data[t].s = calloc(sample_count_per_thread, sample_struct_bytes);
@@ -30,7 +32,7 @@ static inline void profAlloc(long int sample_count_per_thread)
 }
 
 #include <string.h>
-static inline void _prof(int thread_id, char ph, unsigned long ts, int pid, int tid, int size, const char * name)
+static inline void _prof(int thread_id, char ph, long int ts, int pid, int tid, int size, const char * name)
 {
   int ti = thread_id;
   int i = _prof_data[ti].i;
@@ -38,12 +40,12 @@ static inline void _prof(int thread_id, char ph, unsigned long ts, int pid, int 
   _prof_data[ti].s[i].pid = pid;
   _prof_data[ti].s[i].tid = tid;
   _prof_data[ti].s[i].ts = ts;
-  memcpy(_prof_data[ti].s[i].name, name, size);
+  memcpy(_prof_data[ti].s[i].name, name, (size_t)size);
   _prof_data[ti].i += 1;
 }
 
 #include <sys/time.h>
-static inline unsigned long _prof_time()
+static inline long int _prof_time()
 {
   static time_t start = 0;
   struct timeval tv;
@@ -51,7 +53,7 @@ static inline unsigned long _prof_time()
   if (start == 0)
     start = tv.tv_sec;
   tv.tv_sec -= start;
-  return 1000000UL * tv.tv_sec + tv.tv_usec;
+  return 1000000L * tv.tv_sec + tv.tv_usec;
 }
 
 #define profB(name) _prof(0, 'B', _prof_time(), 0, 0, sizeof(name), name);
@@ -62,7 +64,7 @@ static inline unsigned long _prof_time()
 #include <stdio.h>
 static inline void profPrintAndFree()
 {
-  unsigned long self_t_begin = _prof_time();
+  long int self_t_begin = _prof_time();
   fprintf(stderr, "{\"traceEvents\":[{}\n");
   for (int t = 0; t < /*PROF_MAX_NUM_OF_THREADS*/4; t++)
   {
