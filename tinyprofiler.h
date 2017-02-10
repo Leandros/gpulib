@@ -9,7 +9,7 @@ struct {
     char ph;
     int pid;
     int tid;
-    long int ts;
+    unsigned long ts;
     char name[100];
   } * s;
 } _prof_data[/*PROF_MAX_NUM_OF_THREADS*/4] = {};
@@ -24,7 +24,7 @@ static inline void profAlloc(size_t sample_count_per_thread)
       char ph;
       int pid;
       int tid;
-      long int ts;
+      unsigned long ts;
       char name[100];
     });
     _prof_data[t].s = calloc(sample_count_per_thread, sample_struct_bytes);
@@ -32,7 +32,7 @@ static inline void profAlloc(size_t sample_count_per_thread)
 }
 
 #include <string.h>
-static inline void _prof(int thread_id, char ph, long int ts, int pid, int tid, int size, const char * name)
+static inline void _prof(int thread_id, char ph, unsigned long ts, int pid, int tid, int size, const char * name)
 {
   int ti = thread_id;
   int i = _prof_data[ti].i;
@@ -45,15 +45,15 @@ static inline void _prof(int thread_id, char ph, long int ts, int pid, int tid, 
 }
 
 #include <sys/time.h>
-static inline long int _prof_time()
+static inline unsigned long _prof_time()
 {
-  static time_t start = 0;
+  static unsigned long start = 0;
   struct timeval tv;
   gettimeofday(&tv, NULL);
   if (start == 0)
     start = tv.tv_sec;
   tv.tv_sec -= start;
-  return 1000000L * tv.tv_sec + tv.tv_usec;
+  return 1000000UL * tv.tv_sec + tv.tv_usec;
 }
 
 #define profB(name) _prof(0, 'B', _prof_time(), 0, 0, sizeof(name), name);
@@ -64,11 +64,11 @@ static inline long int _prof_time()
 #include <stdio.h>
 static inline void profPrintAndFree()
 {
-  long int self_t_begin = _prof_time();
+  unsigned long self_t_begin = _prof_time();
   fprintf(stderr, "{\"traceEvents\":[{}\n");
   for (int t = 0; t < /*PROF_MAX_NUM_OF_THREADS*/4; t++)
   {
-    for (long int i = 0; i < _prof_data[t].sample_count; i++)
+    for (size_t i = 0; i < _prof_data[t].sample_count; i++)
     {
       if (_prof_data[t].s[i].ph)
         fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n",
