@@ -398,9 +398,28 @@ static inline uint32_t gpu_cast_tex(
 #define gpu_cast_img(tex_id, format, layer_first, layer_count, mipmap_first, mipmap_count) gpu_cast_tex(false, tex_id, format, layer_first, layer_count, mipmap_first, mipmap_count)
 #define gpu_cast_cbm(tex_id, format, layer_first, layer_count, mipmap_first, mipmap_count) gpu_cast_tex(true, tex_id, format, layer_first, layer_count, mipmap_first, mipmap_count)
 
-#define gpu_get(tex_id, layer, x, y, width, height, pixel_format, pixel_type, pixels_bytes, pixels) glGetTextureSubImage(tex_id, 0, x, y, layer, width, height, 1, pixel_format, pixel_type, pixels_bytes, pixels)
-#define gpu_set(tex_id, layer, x, y, width, height, pixel_format, pixel_type, pixels) glTextureSubImage3D(tex_id, 0, x, y, layer, width, height, 1, pixel_format, pixel_type, pixels)
-#define gpu_mip(tex_id) glGenerateTextureMipmap(tex_id)
+static inline void gpu_get(
+    uint32_t tex_id, int layer, int x, int y, int width, int height, uint32_t pixel_format, uint32_t pixel_type, int pixels_bytes, void * pixels)
+{
+  profB(__func__);
+  glGetTextureSubImage(tex_id, 0, x, y, layer, width, height, 1, pixel_format, pixel_type, pixels_bytes, pixels);
+  profE(__func__);
+}
+
+static inline void gpu_set(
+    uint32_t tex_id, int layer, int x, int y, int width, int height, uint32_t pixel_format, uint32_t pixel_type, void * pixels)
+{
+  profB(__func__);
+  glTextureSubImage3D(tex_id, 0, x, y, layer, width, height, 1, pixel_format, pixel_type, pixels);
+  profE(__func__);
+}
+
+static inline void gpu_mip(uint32_t tex_id)
+{
+  profB(__func__);
+  glGenerateTextureMipmap(tex_id);
+  profE(__func__);
+}
 
 static inline void gpu_bmp_img(uint32_t tex_id, int width, int height, int layer_count, const char ** bmp_filepaths)
 {
@@ -638,8 +657,19 @@ static inline uint32_t gpu_xfb(
   return xfb_id;
 }
 
-#define gpu_bind_fbo(fbo_id) glBindFramebuffer(36160, fbo_id)
-#define gpu_bind_xfb(xfb_id) glBindTransformFeedback(36386, xfb_id)
+static inline void gpu_bind_fbo(uint32_t fbo_id)
+{
+  profB(__func__);
+  glBindFramebuffer(36160, fbo_id);
+  profE(__func__);
+}
+
+static inline void gpu_bind_xfb(uint32_t xfb_id)
+{
+  profB(__func__);
+  glBindTransformFeedback(36386, xfb_id);
+  profE(__func__);
+}
 
 static inline void gpu_draw(int gpu_op_count, const struct gpu_op_t * gpu_op)
 {
@@ -737,4 +767,9 @@ static inline void gpu_swap(SDL_Window * sdl_window)
   profE(__func__);
 }
 
-#define gpu_clear() glClear(16640) // GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT
+static inline void gpu_clear()
+{
+  profB(__func__);
+  glClear(16640); // GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT
+  profE(__func__);
+}

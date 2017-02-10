@@ -78,8 +78,8 @@ static inline void profPrintAndFree()
   }
   for (int t = 0; t < /*PROF_MAX_NUM_OF_THREADS*/4; t++)
     free(_prof_data[t].s);
-  fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n", 'B', self_t_begin, 0, 0, "profPrintAndFree()");
-  fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n", 'E', _prof_time(), 0, 0, "profPrintAndFree()");
+  fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n", 'B', self_t_begin, 0, 0, __func__);
+  fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n", 'E', _prof_time(), 0, 0, __func__);
   fprintf(stderr, "]}\n");
 }
 
