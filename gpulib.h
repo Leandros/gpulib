@@ -2,6 +2,7 @@
 
 #include "SDL2/SDL.h"
 #include "gl_functions.h"
+#include "tinyprofiler.h"
 
 struct gpu_cmd_t
 {
@@ -135,17 +136,23 @@ enum gpu_pixel_t
 
 static inline void gpu_check_exts(int extensions_count, const char ** extensions)
 {
+  profB(__func__);
+
   for (int i = 0; i < extensions_count; ++i)
   {
     if (SDL_GL_ExtensionSupported(extensions[i]) == SDL_FALSE)
       SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR: Unsupported OpenGL Extension", extensions[i], NULL);
   }
+
+  profE(__func__);
 }
 
 static inline void gpu_window(
     const char * window_title, int window_width, int window_height, int msaa_samples,
     uint32_t sdl_init_flags, uint32_t sdl_window_flags, SDL_Window ** sdl_window, void ** sdl_glcontext)
 {
+  profB(__func__);
+
   SDL_assert(SDL_Init(SDL_INIT_VIDEO | sdl_init_flags) == 0);
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -295,10 +302,14 @@ static inline void gpu_window(
   glCreateVertexArrays(1, &vao);                                                                 //
   glBindVertexArray(vao);                                                                        //
   /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  profE(__func__);
 }
 
 static inline void * gpu_malloc(int bytes)
 {
+  profB(__func__);
+
   uint32_t mem_id = 0;
   glCreateBuffers(1, &mem_id);
 
@@ -314,11 +325,15 @@ static inline void * gpu_malloc(int bytes)
   p_u32[0] = mem_id;
   p_u32 += 1;
 
+  profE(__func__);
+
   return (void *)p_u32;
 }
 
 static inline uint32_t gpu_cast(void * gpu_mem_ptr, enum gpu_tex_mem_format_t format, int bytes_first, int bytes_count)
 {
+  profB(__func__);
+
   uint32_t tex_id = 0;
   glCreateTextures(35882, 1, &tex_id);
 
@@ -326,25 +341,35 @@ static inline uint32_t gpu_cast(void * gpu_mem_ptr, enum gpu_tex_mem_format_t fo
 
   glTextureBufferRange(tex_id, format, mem_id, 4 + bytes_first, bytes_count);
 
+  profE(__func__);
+
   return tex_id;
 }
 
 static inline uint32_t gpu_malloc_tex(bool is_cubemap, enum gpu_tex_format_t format, int width, int height, int layer_count, int mipmap_count)
 {
+  profB(__func__);
+
   uint32_t tex_id = 0;
   glCreateTextures(is_cubemap ? 36873 : 35866, 1, &tex_id);
 
   glTextureStorage3D(tex_id, mipmap_count, format, width, height, layer_count * (is_cubemap ? 6 : 1));
+
+  profE(__func__);
 
   return tex_id;
 }
 
 static inline uint32_t gpu_malloc_msi(enum gpu_tex_format_t format, int width, int height, int layer_count, int msaa_samples)
 {
+  profB(__func__);
+
   uint32_t tex_id = 0;
   glCreateTextures(37122, 1, &tex_id);
 
   glTextureStorage3DMultisample(tex_id, msaa_samples, format, width, height, layer_count, 1);
+
+  profE(__func__);
 
   return tex_id;
 }
@@ -355,6 +380,8 @@ static inline uint32_t gpu_malloc_msi(enum gpu_tex_format_t format, int width, i
 static inline uint32_t gpu_cast_tex(
     bool is_cubemap, uint32_t tex_id, enum gpu_tex_format_t format, int layer_first, int layer_count, int mipmap_first, int mipmap_count)
 {
+  profB(__func__);
+
   uint32_t new_tex_id = 0;
   glGenTextures(1, &new_tex_id);
 
@@ -362,6 +389,8 @@ static inline uint32_t gpu_cast_tex(
       new_tex_id, is_cubemap ? 36873 : 35866, tex_id, format, mipmap_first, mipmap_count,
       layer_first * (is_cubemap ? 6 : 1),
       layer_count * (is_cubemap ? 6 : 1));
+
+  profE(__func__);
 
   return new_tex_id;
 }
@@ -375,6 +404,8 @@ static inline uint32_t gpu_cast_tex(
 
 static inline void gpu_bmp_img(uint32_t tex_id, int width, int height, int layer_count, const char ** bmp_filepaths)
 {
+  profB(__func__);
+
   for (int i = 0; i < layer_count; ++i)
   {
     SDL_Surface * bmp = SDL_LoadBMP(bmp_filepaths[i]);
@@ -384,6 +415,8 @@ static inline void gpu_bmp_img(uint32_t tex_id, int width, int height, int layer
       SDL_FreeSurface(bmp);
     }
   }
+
+  profE(__func__);
 }
 
 static inline void gpu_bmp_cbm(
@@ -395,6 +428,8 @@ static inline void gpu_bmp_cbm(
     const char ** pos_z_bmp_filepaths,
     const char ** neg_z_bmp_filepaths)
 {
+  profB(__func__);
+
   for (int i = 0; i < layer_count; ++i)
   {
     SDL_Surface * pos_x_bmp = SDL_LoadBMP(pos_x_bmp_filepaths[i]);
@@ -418,11 +453,15 @@ static inline void gpu_bmp_cbm(
     if (pos_z_bmp) SDL_FreeSurface(pos_z_bmp);
     if (neg_z_bmp) SDL_FreeSurface(neg_z_bmp);   
   }
+
+  profE(__func__);
 }
 
 static inline uint32_t gpu_smp(
     int max_anisotropy, enum gpu_smp_filter_t min_filter, enum gpu_smp_filter_t mag_filter, enum gpu_smp_wrapping_t wrapping)
 {
+  profB(__func__);
+
   uint32_t smp_id = 0;
   glCreateSamplers(1, &smp_id);
 
@@ -433,11 +472,15 @@ static inline uint32_t gpu_smp(
   glSamplerParameteri(smp_id, 10243, wrapping);
   glSamplerParameteri(smp_id, 32882, wrapping);
 
+  profE(__func__);
+
   return smp_id;
 }
 
 static inline uint32_t gpu_pro(enum gpu_shader_t shader_type, const char * shader_string, int feedback_count, const char ** feedback_names)
 {
+  profB(__func__);
+
   uint32_t shader_id = glCreateShader(shader_type);
 
   glShaderSource(shader_id, 1, (const char **)&shader_string, NULL);
@@ -453,12 +496,16 @@ static inline uint32_t gpu_pro(enum gpu_shader_t shader_type, const char * shade
   glDetachShader(pro_id, shader_id);
   glDeleteShader(shader_id);
 
+  profE(__func__);
+
   return pro_id;
 }
 
 static inline uint32_t gpu_pro_file(
     enum gpu_shader_t shader_type, const char * shader_filepath, int feedback_count, const char ** feedback_names)
 {
+  profB(__func__);
+
   SDL_RWops * fd = SDL_RWFromFile(shader_filepath, "rb");
 
   if (fd == NULL)
@@ -472,6 +519,8 @@ static inline uint32_t gpu_pro_file(
   SDL_RWread(fd, src, bytes, 1);
   SDL_RWclose(fd);
   const char * shader_string = &src[0];
+
+  profE(__func__);
 
   return gpu_pro(shader_type, shader_string, feedback_count, feedback_names);
 }
@@ -518,11 +567,15 @@ static inline uint32_t gpu_pro_file(
 
 static inline uint32_t gpu_ppo(uint32_t vert_pro_id, uint32_t frag_pro_id)
 {
+  profB(__func__);
+
   uint32_t ppo_id = 0;
   glCreateProgramPipelines(1, &ppo_id);
 
   if (vert_pro_id) glUseProgramStages(ppo_id, 1, vert_pro_id);
   if (frag_pro_id) glUseProgramStages(ppo_id, 2, frag_pro_id);
+
+  profE(__func__);
 
   return ppo_id;
 }
@@ -534,6 +587,8 @@ static inline uint32_t gpu_fbo(
     uint32_t color_tex_id_3, int color_tex_layer_3,
     uint32_t depth_tex_id_0, int depth_tex_layer_0)
 {
+  profB(__func__);
+
   uint32_t fbo_id = 0;
   glCreateFramebuffers(1, &fbo_id);
 
@@ -552,6 +607,8 @@ static inline uint32_t gpu_fbo(
 
   glNamedFramebufferDrawBuffers(fbo_id, 4, attachments);
 
+  profE(__func__);
+
   return fbo_id;
 }
 
@@ -561,6 +618,8 @@ static inline uint32_t gpu_xfb(
     void * gpu_mem_ptr_2, int mem_2_bytes_first, int mem_2_bytes_count,
     void * gpu_mem_ptr_3, int mem_3_bytes_first, int mem_3_bytes_count)
 {
+  profB(__func__);
+
   uint32_t xfb_id = 0;
   glCreateTransformFeedbacks(1, &xfb_id);
 
@@ -574,6 +633,8 @@ static inline uint32_t gpu_xfb(
   if (mem_2_id) glTransformFeedbackBufferRange(xfb_id, 2, mem_2_id, 4 + mem_2_bytes_first, mem_2_bytes_count);
   if (mem_3_id) glTransformFeedbackBufferRange(xfb_id, 3, mem_3_id, 4 + mem_3_bytes_first, mem_3_bytes_count);
 
+  profE(__func__);
+
   return xfb_id;
 }
 
@@ -582,6 +643,8 @@ static inline uint32_t gpu_xfb(
 
 static inline void gpu_draw(int gpu_op_count, const struct gpu_op_t * gpu_op)
 {
+  profB(__func__);
+
   for (int i = 0; i < gpu_op_count; ++i)
   {
     struct gpu_op_t op = gpu_op[i];
@@ -602,10 +665,14 @@ static inline void gpu_draw(int gpu_op_count, const struct gpu_op_t * gpu_op)
       glDrawArraysInstancedBaseInstance(op.mode, cmd.first, cmd.count, cmd.instance_count, cmd.instance_first);
     }
   }
+
+  profE(__func__);
 }
 
 static inline void gpu_draw_xfb(int gpu_op_count, const struct gpu_op_t * gpu_op)
 {
+  profB(__func__);
+
   for (int i = 0; i < gpu_op_count; ++i)
   {
     struct gpu_op_t op = gpu_op[i];
@@ -628,12 +695,16 @@ static inline void gpu_draw_xfb(int gpu_op_count, const struct gpu_op_t * gpu_op
     }
     glEndTransformFeedback();
   }
+
+  profE(__func__);
 }
 
 static inline void gpu_blit(
     uint32_t source_fbo_id, int source_color_id, int source_x, int source_y, int source_width, int source_height,
     uint32_t target_fbo_id, int target_color_id, int target_x, int target_y, int target_width, int target_height)
 {
+  profB(__func__);
+
   glNamedFramebufferReadBuffer(source_fbo_id, 36064 + source_color_id);
   glNamedFramebufferDrawBuffer(target_fbo_id, 36064 + target_color_id);
 
@@ -641,20 +712,29 @@ static inline void gpu_blit(
       source_fbo_id, target_fbo_id,
       source_x, source_y, source_width, source_height,
       target_x, target_y, target_width, target_height, 16384, 9728);
+
+  profE(__func__);
 }
 
 static inline void gpu_blit_to_screen(uint32_t fbo_id, int color_id, int width, int height)
 {
+  profB(__func__);
+
   glNamedFramebufferReadBuffer(fbo_id, 36064 + color_id);
   glNamedFramebufferDrawBuffer(0, 1029);
   glBlitNamedFramebuffer(fbo_id, 0, 0, 0, width, height, 0, 0, width, height, 16384, 9728);
+
+  profE(__func__);
 }
 
 static inline void gpu_swap(SDL_Window * sdl_window)
 {
+  profB(__func__);
+
   SDL_GL_SwapWindow(sdl_window);
   glFinish();
+
+  profE(__func__);
 }
 
 #define gpu_clear() glClear(16640) // GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT
-

@@ -198,6 +198,9 @@ static inline f32 tanfdegdiv2(f32 d)
 
 i32 main()
 {
+  profAlloc(1000000);
+  profB(__func__);
+
   let path_exe = SDL_GetBasePath();
 
   for (int i = 0, size = bytesof(RESRC); i < size; i += MAX_STR)
@@ -402,11 +405,7 @@ i32 main()
 
   while (1)
   {
-    for (SDL_Event e; SDL_PollEvent(&e);)
-    {
-      if (e.type == SDL_QUIT)
-        goto exit;
-    }
+    profB("main loop");
 
     u32 t_curr = SDL_GetTicks();
     f64 dt = ((t_curr - t_prev) * 60.0) / 1000.0;
@@ -481,8 +480,18 @@ i32 main()
     gpu_swap(sdl_window);
 
     t_prev = t_curr;
+
+    profE("main loop");
+
+    for (SDL_Event e; SDL_PollEvent(&e);)
+    {
+      if (e.type == SDL_QUIT)
+        goto exit;
+    }
   }
 
 exit:
+  profE(__func__);
+  profPrintAndFree();
   return 0;
 }
