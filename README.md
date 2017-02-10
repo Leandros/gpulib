@@ -67,8 +67,8 @@ static inline uint32_t gpu_smp() {}
 static inline uint32_t gpu_ppo() {}
 static inline uint32_t gpu_fbo() {}
 static inline uint32_t gpu_xfb() {}
-static inline void gpu_bind_fbo()
-static inline void gpu_bind_xfb()
+static inline void gpu_bind_fbo() {}
+static inline void gpu_bind_xfb() {}
 static inline void gpu_draw() {}
 static inline void gpu_draw_xfb() {}
 static inline void gpu_blit() {}
