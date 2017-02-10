@@ -685,6 +685,7 @@ static inline void gpu_draw(int gpu_op_count, const struct gpu_op_t * gpu_op)
 
     if (op.cmd == NULL) continue;
 
+    profB("bind");
     if (op.tex != NULL) glBindTextures(op.tex_first, op.tex_count, op.tex);
     if (op.smp != NULL) glBindSamplers(op.smp_first, op.smp_count, op.smp);
 
@@ -692,12 +693,15 @@ static inline void gpu_draw(int gpu_op_count, const struct gpu_op_t * gpu_op)
     if (op.frag != 0) glProgramUniform1iv(op.frag, 0, 1, &op.id);
 
     glBindProgramPipeline(op.ppo);
+    profE("bind");
 
+    profB("submit");
     for (int i = 0; i < op.cmd_count; ++i)
     {
       struct gpu_cmd_t cmd = op.cmd[i];
       glDrawArraysInstancedBaseInstance(op.mode, cmd.first, cmd.count, cmd.instance_count, cmd.instance_first);
     }
+    profE("submit");
   }
 
   profE(__func__);
@@ -713,6 +717,7 @@ static inline void gpu_draw_xfb(int gpu_op_count, const struct gpu_op_t * gpu_op
 
     if (op.cmd == NULL) continue;
 
+    profB("bind");
     if (op.tex != NULL) glBindTextures(op.tex_first, op.tex_count, op.tex);
     if (op.smp != NULL) glBindSamplers(op.smp_first, op.smp_count, op.smp);
 
@@ -720,7 +725,9 @@ static inline void gpu_draw_xfb(int gpu_op_count, const struct gpu_op_t * gpu_op
     if (op.frag != 0) glProgramUniform1iv(op.frag, 0, 1, &op.id);
 
     glBindProgramPipeline(op.ppo);
+    profE("bind");
 
+    profB("submit");
     glBeginTransformFeedback(op.mode);
     for (int i = 0; i < op.cmd_count; ++i)
     {
@@ -728,6 +735,7 @@ static inline void gpu_draw_xfb(int gpu_op_count, const struct gpu_op_t * gpu_op
       glDrawArraysInstancedBaseInstance(op.mode, cmd.first, cmd.count, cmd.instance_count, cmd.instance_first);
     }
     glEndTransformFeedback();
+    profE("submit");
   }
 
   profE(__func__);
