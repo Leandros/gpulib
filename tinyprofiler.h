@@ -11,7 +11,6 @@
 
 struct {
   int i;
-  size_t sample_count;
   struct {
     char ph;
     int pid;
@@ -19,6 +18,7 @@ struct {
     unsigned long ts;
     char name[100];
   } * s;
+  size_t sample_count;
 } _prof_data[/*PROF_MAX_NUM_OF_THREADS*/4] = {};
 
 unsigned long _prof_tv_sec_start = 0;
