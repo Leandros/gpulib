@@ -153,7 +153,9 @@ static inline void gpu_window(
 {
   profB(__func__);
 
-  SDL_assert(SDL_Init(SDL_INIT_VIDEO | sdl_init_flags) == 0);
+  int sdl_init = SDL_Init(SDL_INIT_VIDEO | sdl_init_flags);
+
+  SDL_assert(sdl_init == 0);
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -174,7 +176,9 @@ static inline void gpu_window(
   if (sdl_glcontext)
      *sdl_glcontext = glcontext;
 
-  SDL_assert(SDL_GL_LoadLibrary(NULL) == 0);
+  int gl_load = SDL_GL_LoadLibrary(NULL);
+
+  SDL_assert(gl_load == 0);
 
   const char * extensions[] =
   {
