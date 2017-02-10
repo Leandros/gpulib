@@ -41,9 +41,9 @@ static inline uint32_t gpu_malloc_msi() {}
 #define gpu_malloc_cbm()
 #define gpu_cast_img()
 #define gpu_cast_cbm()
-#define gpu_get()
-#define gpu_set()
-#define gpu_mip()
+static inline void gpu_get() {}
+static inline void gpu_set() {}
+static inline void gpu_mip() {}
 static inline void gpu_bmp_img() {}
 static inline void gpu_bmp_cbm() {}
 static inline uint32_t gpu_smp() {}
@@ -67,14 +67,14 @@ static inline uint32_t gpu_smp() {}
 static inline uint32_t gpu_ppo() {}
 static inline uint32_t gpu_fbo() {}
 static inline uint32_t gpu_xfb() {}
-#define gpu_bind_fbo()
-#define gpu_bind_xfb()
+static inline void gpu_bind_fbo()
+static inline void gpu_bind_xfb()
 static inline void gpu_draw() {}
 static inline void gpu_draw_xfb() {}
 static inline void gpu_blit() {}
 static inline void gpu_blit_to_screen() {}
-#define gpu_clear()
-#define gpu_swap()
+static inline void gpu_swap() {}
+static inline void gpu_clear() {}
 ```
 
 Naming convention:
