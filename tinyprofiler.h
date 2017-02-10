@@ -1,6 +1,13 @@
 #pragma once
 
+// License: Public Domain
+
 #ifdef USE_TINYPROFILER
+
+#include <sys/time.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 struct {
   int i;
@@ -14,24 +21,15 @@ struct {
   } * s;
 } _prof_data[/*PROF_MAX_NUM_OF_THREADS*/4] = {};
 
-#include <stdlib.h>
-static inline void profAlloc(size_t sample_count_per_thread)
+unsigned long _prof_tv_sec_start = 0;
+
+static inline unsigned long _prof_time()
 {
-  for (int t = 0; t < /*PROF_MAX_NUM_OF_THREADS*/4; t++)
-  {
-    _prof_data[t].sample_count = sample_count_per_thread;
-    size_t sample_struct_bytes = sizeof(struct {
-      char ph;
-      int pid;
-      int tid;
-      unsigned long ts;
-      char name[100];
-    });
-    _prof_data[t].s = calloc(sample_count_per_thread, sample_struct_bytes);
-  }
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return 1000000UL * tv.tv_sec + tv.tv_usec;
 }
 
-#include <string.h>
 static inline void _prof(int thread_id, char ph, unsigned long ts, int pid, int tid, int size, const char * name)
 {
   int ti = thread_id;
@@ -44,24 +42,25 @@ static inline void _prof(int thread_id, char ph, unsigned long ts, int pid, int 
   _prof_data[ti].i += 1;
 }
 
-#include <sys/time.h>
-static inline unsigned long _prof_time()
+static inline void profAlloc(size_t sample_count_per_thread)
 {
-  static unsigned long start = 0;
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  if (start == 0)
-    start = tv.tv_sec;
-  tv.tv_sec -= start;
-  return 1000000UL * tv.tv_sec + tv.tv_usec;
+  _prof_tv_sec_start = tv.tv_sec;
+  size_t sample_struct_bytes = sizeof(struct {
+    char ph;
+    int pid;
+    int tid;
+    unsigned long ts;
+    char name[100];
+  });
+  for (int t = 0; t < /*PROF_MAX_NUM_OF_THREADS*/4; t++)
+  {
+    _prof_data[t].sample_count = sample_count_per_thread;
+    _prof_data[t].s = calloc(sample_count_per_thread, sample_struct_bytes);
+  }
 }
 
-#define profB(name) _prof(0, 'B', _prof_time(), 0, 0, sizeof(name), name);
-#define profE(name) _prof(0, 'E', _prof_time(), 0, 0, sizeof(name), name);
-#define profBmt(tid, name) _prof(tid, 'B', _prof_time(), 0, tid, sizeof(name), name);
-#define profEmt(tid, name) _prof(tid, 'E', _prof_time(), 0, tid, sizeof(name), name);
-
-#include <stdio.h>
 static inline void profPrintAndFree()
 {
   unsigned long self_t_begin = _prof_time();
@@ -72,24 +71,30 @@ static inline void profPrintAndFree()
     {
       if (_prof_data[t].s[i].ph)
         fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n",
-                _prof_data[t].s[i].ph, _prof_data[t].s[i].ts, _prof_data[t].s[i].pid, _prof_data[t].s[i].tid, _prof_data[t].s[i].name);
+                _prof_data[t].s[i].ph, _prof_data[t].s[i].ts - 1000000UL * _prof_tv_sec_start,
+                _prof_data[t].s[i].pid, _prof_data[t].s[i].tid, _prof_data[t].s[i].name);
       else break;
     }
   }
   for (int t = 0; t < /*PROF_MAX_NUM_OF_THREADS*/4; t++)
     free(_prof_data[t].s);
-  fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n", 'B', self_t_begin, 0, 0, __func__);
-  fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n", 'E', _prof_time(), 0, 0, __func__);
+  fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n", 'B', self_t_begin - 1000000UL * _prof_tv_sec_start, 0, 0, __func__);
+  fprintf(stderr, ",{\"ph\":\"%c\",\"ts\":%zu,\"pid\":%d,\"tid\":%d,\"name\":\"%s\"}\n", 'E', _prof_time() - 1000000UL * _prof_tv_sec_start, 0, 0, __func__);
   fprintf(stderr, "]}\n");
 }
+
+#define profB(name) _prof(0, 'B', _prof_time(), 0, 0, sizeof(name), name);
+#define profE(name) _prof(0, 'E', _prof_time(), 0, 0, sizeof(name), name);
+#define profBmt(tid, name) _prof(tid, 'B', _prof_time(), 0, tid, sizeof(name), name);
+#define profEmt(tid, name) _prof(tid, 'E', _prof_time(), 0, tid, sizeof(name), name);
 
 #else // USE_TINYPROFILER
 
 #define profAlloc(samples)
+#define profPrintAndFree()
 #define profB(name)
 #define profE(name)
 #define profBmt(tid, name)
 #define profEmt(tid, name)
-#define profPrintAndFree()
 
 #endif // USE_TINYPROFILER
